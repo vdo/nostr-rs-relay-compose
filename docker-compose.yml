@@ -1,0 +1,50 @@
+version: "3.7"
+
+services:
+  nostr-rs-relay:
+    container_name: nostr-rs-relay
+    image: scsibug/nostr-rs-relay:${RELAY_TAG}
+    sysctls:
+      net.core.somaxconn: 8128
+    # command:
+    volumes:
+      - "./data:/usr/src/app/db"
+    labels:
+      - "traefik.enable=true"
+      # - "traefik.http.routers.nostr-rs-relay.rule=(Host(`${RELAY_DOMAIN}`) && PathPrefix(`/ws`))"
+      - "traefik.http.routers.nostr-rs-relay.rule=(Host(`${RELAY_DOMAIN}`))"
+      - "traefik.http.routers.nostr-rs-relay.entrypoints=websecure"
+      - "traefik.http.routers.nostr-rs-relay.tls.certresolver=le"
+      - "traefik.http.routers.nostr-rs-relay.service=nostr-rs-relay"
+      - "traefik.http.services.nostr-rs-relay.loadbalancer.server.port=${RELAY_PORT}"
+      - "traefik.http.middlewares.sslheader.headers.customrequestheaders.X-Forwarded-Proto = https"
+      # - "traefik.http.routers.nostr-rs-relay.middlewares=wss-stripprefix"
+      # - "traefik.http.middlewares.wss-stripprefix.stripprefix.prefixes=/wss"
+      # - "traefik.http.services.nostr-rs-relay.loadbalancer.sticky.cookie=true"
+      # - "traefik.http.services.nostr-rs-relay.loadbalancer.sticky.cookie.name=io"
+      # - "traefik.http.services.nostr-rs-relay.loadbalancer.sticky.cookie.httponly=true"
+      # - "traefik.http.services.nostr-rs-relay.loadbalancer.sticky.cookie.secure=true"
+      # - "traefik.http.services.nostr-rs-relay.loadbalancer.sticky.cookie.samesite=io"
+
+  traefik:
+    image: traefik:${TRAEFIK_TAG}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    command:
+      - "--log.level=${TRAEFIK_LOGLEVEL}"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entrypoints.web.http.redirections.entrypoint.permanent=true"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.le.acme.httpchallenge=true"
+      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.le.acme.email=${TRAEFIK_ACME_EMAIL}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+    restart: always
