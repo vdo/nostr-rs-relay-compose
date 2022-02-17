@@ -9,7 +9,7 @@ services:
     # command:
     user: "appuser"
     volumes:
-      - "./data:/usr/src/app/"
+      - "relay-db:/usr/src/app/db"
       - "./config.toml:/usr/src/app/config.toml"
     labels:
       - "traefik.enable=true"
@@ -51,3 +51,6 @@ services:
       - "--certificatesresolvers.le.acme.email=${TRAEFIK_ACME_EMAIL}"
       - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
     restart: always
+
+volumes:
+  relay-db: {}
