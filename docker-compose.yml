@@ -7,6 +7,7 @@ services:
     sysctls:
       net.core.somaxconn: 8128
     # command:
+    user: "appuser"
     volumes:
       - "./db:/usr/src/app/db"
       - "./config.toml:/usr/src/app/config.toml"
