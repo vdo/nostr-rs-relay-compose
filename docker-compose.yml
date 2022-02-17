@@ -9,7 +9,7 @@ services:
     # command:
     user: "appuser"
     volumes:
-      - "./db:/usr/src/app/db"
+      - "./data:/usr/src/app/"
       - "./config.toml:/usr/src/app/config.toml"
     labels:
       - "traefik.enable=true"
