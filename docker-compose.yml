@@ -8,7 +8,8 @@ services:
       net.core.somaxconn: 8128
     # command:
     volumes:
-      - "./data:/usr/src/app/db"
+      - "./db:/usr/src/app/db"
+      - "./config.toml:/usr/src/app/config.toml"
     labels:
       - "traefik.enable=true"
       # - "traefik.http.routers.nostr-rs-relay.rule=(Host(`${RELAY_DOMAIN}`) && PathPrefix(`/ws`))"
@@ -28,6 +29,7 @@ services:
 
   traefik:
     image: traefik:${TRAEFIK_TAG}
+    container_name: traefik
     ports:
       - 80:80
       - 443:443
